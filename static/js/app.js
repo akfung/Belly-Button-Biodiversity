@@ -12,27 +12,65 @@ d3.json('../../samples.json').then(function(data){
             .text(name)
     });
 
+    //set otu_ids and sample values as variables
+    function findBarData(index) {
+        let OTUdata = {};
+        OTUdata['IDs'] = samples[index]["otu_ids"].slice(0,11).map(i => `OTU ${i}`);
+        OTUdata['values'] = samples[index]["sample_values"].slice(0,11);
+        return OTUdata;
+    } 
+    
+    function findBubbleData(index) {
+        let OTUdata = {};
+        OTUdata['IDs'] = samples[index]["otu_ids"];
+        OTUdata['values'] = samples[index]["sample_values"];
+        return OTUdata;
+    } 
+
     // generate traces
-    let trace1 = {
-        x: samples[0]["otu_ids"].slice(0,11).map(i => `OTU ${i}`), //maps the OTU ids array to a string array to use as labels
-        y:samples[0]["sample_values"].slice(0,11),
-        type: 'bar'
+    let traceBar = { //bar trace
+        y: findBarData(0).IDs,
+        x: findBarData(0).values,
+        type: 'bar',
+        orientation: "h"
     };
 
-    let layout = {
+    let traceBubble = { //scatter plot trace
+        x: findBubbleData(0).IDs,
+        y: findBubbleData(0).values,
+        type: 'scatter',
+        mode: "markers",
+        marker: {
+            size: findBubbleData(0).values,
+            color: findBubbleData(0).IDs,
+        }
+    };
+
+    // set layout settings
+    let barLayout = {
         title: 'Top OTUs per Subject Sample',
+        xaxis: {
+            title: "Sample Value"
+        },
+        yaxis: {
+            title: "OTU ID"
+        },
+    }
+
+    let bubbleLayout = {
+        title: 'All OTUs in Sample',
         xaxis: {
             title: "OTU ID"
         },
         yaxis: {
             title: "Sample Value"
         },
-
     }
 
-    // make chartData variable with list of traces and draw with newPlot
-    let chartData = [trace1]
-    Plotly.newPlot('bar', chartData, layout);
+    // Create new plots
+
+    Plotly.newPlot('bar', [traceBar], barLayout);
+    Plotly.newPlot("bubble", [traceBubble], bubbleLayout);
 
     // barchart listener function and d3 selection to bind function
     
@@ -41,11 +79,13 @@ d3.json('../../samples.json').then(function(data){
     function updateBar(){
         let menuSelection = d3.select("#selDataset").property("value"); // save the selected value in variable
         let selectionIndex = names.findIndex(element => element == menuSelection); // find the index of the selected variable
-        let newBarX = samples[selectionIndex]["otu_ids"].slice(0, 11).map(i => `OTU ${i}`),
-            newBarY = samples[selectionIndex]["sample_values"].slice(0, 11);
-
-        Plotly.restyle("bar", "x", [newBarX]);
-        Plotly.restyle("bar", "y", [newBarY]);
+        // restyle the bar plot
+        Plotly.restyle("bar", "y", [findBarData(selectionIndex).IDs]);
+        Plotly.restyle("bar", "x", [findBarData(selectionIndex).values]);
+        //restyle the scatter plot
+        Plotly.restyle("bubble", "x", [findBubbleData(selectionIndex).IDs]);
+        Plotly.restyle("bubble", "y", [findBubbleData(selectionIndex).values]);
+        console.log(findBubbleData(selectionIndex).values)
     };
 
 }
