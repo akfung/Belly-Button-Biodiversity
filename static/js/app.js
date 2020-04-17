@@ -1,5 +1,9 @@
 // read json with d3
-d3.json('../../samples.json').then(function(data){
+// d3.json('../../samples.json').then(function(data){}) 
+// I would run this as a d3.json promise if this were a dynamic page, but it has to be static if you make a github page
+//from a non [username].github.io repo. The data file is being run as a .js to load as an object
+
+
     let names = data.names,
         metadata = data.metadata,
         samples = data.samples;
@@ -11,6 +15,16 @@ d3.json('../../samples.json').then(function(data){
             .attr("value", name)
             .text(name)
     });
+
+    //set Demographic info
+    d3.select("#sample-metadata")
+        .html(`<p>ID: ${names[0]}</p>
+            <p>Ethnicity: ${metadata[0]["ethnicity"]}</p>
+            <p>Gender: ${metadata[0]["gender"]}</p>
+            <p>Age: ${metadata[0]["age"]}</p>
+            <p>Location: ${metadata[0]["location"]}</p>
+            <p>Belly Button Type: ${metadata[0]["bbtype"]}</p>
+            <p>Wfrequency: ${metadata[0]["wfreq"]}</p>`);
 
     //set otu_ids and sample values as variables
     function findBarData(index) {
@@ -24,6 +38,7 @@ d3.json('../../samples.json').then(function(data){
         let OTUdata = {};
         OTUdata['IDs'] = samples[index]["otu_ids"];
         OTUdata['values'] = samples[index]["sample_values"];
+        OTUdata['labels'] = samples[index]["otu_labels"];
         return OTUdata;
     } 
 
@@ -40,6 +55,7 @@ d3.json('../../samples.json').then(function(data){
         y: findBubbleData(0).values,
         type: 'scatter',
         mode: "markers",
+        text: findBubbleData(0).labels,
         marker: {
             size: findBubbleData(0).values,
             color: findBubbleData(0).IDs,
@@ -86,10 +102,19 @@ d3.json('../../samples.json').then(function(data){
         Plotly.restyle("bubble", "x", [findBubbleData(selectionIndex).IDs]);
         Plotly.restyle("bubble", "y", [findBubbleData(selectionIndex).values]);
         console.log(findBubbleData(selectionIndex).values)
+        //update demo info
+        d3.select("#sample-metadata")
+        .html(`<p>ID: ${names[selectionIndex]}</p>
+            <p>Ethnicity: ${metadata[selectionIndex]["ethnicity"]}</p>
+            <p>Gender: ${metadata[selectionIndex]["gender"]}</p>
+            <p>Age: ${metadata[selectionIndex]["age"]}</p>
+            <p>Location: ${metadata[selectionIndex]["location"]}</p>
+            <p>Belly Button Type: ${metadata[selectionIndex]["bbtype"]}</p>
+            <p>Wfrequency: ${metadata[selectionIndex]["wfreq"]}</p>
+            <p></p>`);
     };
 
-}
-);
+
 
 // optionChanged function for updating value of dropdown
 function optionChanged() {
